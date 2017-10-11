@@ -7,16 +7,33 @@
 #include <sys/stat.h>
 #include <fcntl.h>
 #include <fstream>
+#include <pthread.h>
 using namespace std;
+
+long sum;
+int numbersPerThread;
+int a[1000000];
+
+
+void *sumOfNumbers(void *num)
+{
+	long maxNum = (long)num * numbersPerThread;
+	long tempSum = 0;
+	for(int i = maxNum; i <= maxNum+numbersPerThread; i++)
+	{
+		tempSum += a[i];
+		sum += a[i];
+	}
+	printf("The threads sum is %d\n",tempSum);
+}
 
 int main(int argc, char const * argv[])
 {
 	//Declare variables
-
-	int a[1000000];
 	int count;
 	string textFile;
 	int threadsToMake;
+
 	
 	//Take in the arguments passed in
 	textFile = argv[1];
@@ -44,12 +61,18 @@ int main(int argc, char const * argv[])
 		a[count] = 0;
 	}
 	//now i will be able to pass the same parameter to each thread.. an index and a stop point which is index + index -1
-	int numbersPerThread = count / threadsToMake ;
-	while(count > 0)
+	numbersPerThread = count / threadsToMake ;
+	pthread_t threads[threadsToMake];
+	for(long i = 0; i < threadsToMake; i++)
 	{
-			//call my thread here 
-		
+		//call my thread here 
+		pthread_create(&threads[i], NULL, sumOfNumbers, (void *) i);
 	}
+	for(long i = 0; i < threadsToMake;i++)
+	{
+		pthread_join(threads[i], NULL);
+	}
+	printf("The sum of all threads is: %d", sum);
 	
 	
 return 0 ;
