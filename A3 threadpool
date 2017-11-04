@@ -1,0 +1,89 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <stdint.h>
+#include <math.h>
+#include <pthread.h>
+#include <queue>
+
+pthread_mutex_t mutex;
+long count = 0;
+long number;
+
+/// primality test, if n is prime, return 1, else return 0
+int isPrime(int64_t n)
+{
+     if( n <= 1) return 0; // small numbers are not primes
+     if( n <= 3) return 1; // 2 and 3 are prime
+     if( n % 2 == 0 || n % 3 == 0) return 0; // multiples of 2 and 3 are not primes
+     int64_t i = 5;
+     int64_t max = sqrt(n);
+     while( i <= max) {
+         if (n % i == 0 || n % (i+2) == 0) return 0;
+         i += 6;
+     }
+     return 1;
+}
+
+void *pool(void *arg)
+{
+	while(1)
+	{
+		pthread_mutex_lock(&mutex)
+		if(Q.empty())
+			continue;
+		else : 
+			break;
+	}
+	long num = Q.front();
+	Q.pop();
+	
+	if(isPrime(num))
+			count++;
+	pthread_mutex_unlock(&mutex);
+}
+
+int main(int argc, char const * argv[])
+{
+	string textFile;
+	int threadsToMake;
+
+	//Take in the arguments passed in
+	textFile = argv[1];
+	string threadCountInput=argv[2];
+	threadsToMake = stoi(threadCountInput);
+	
+	queue <pthread_t> threadPool;
+	for(int i = 0 ; i < threadsToMake; i++)
+	{
+		pthread_create(&threads[i], NULL, pool, NULL);
+		threadPool.push(threads[i]);
+	}
+	
+
+	
+	ifstream infile; //open the file
+	infile.open(textFile);
+		while (getline( infile, line ))
+	{	
+		pthread_mutex_lock(&mutex);
+		number = atoi(line.c_str());
+		Q.push(number);
+		pthread_mutex_unlock(&mutex);
+	}
+
+	printf ("Counting Primes usingv %d threads", threadsToMake);
+	for(int i = 0 ; i <threadsToMake; i++)
+	{
+		pthread_mutex_lock(&mutex);
+		pthread_t priority = threadPool.front();
+		pthread_join(priority)
+		threadPool.pop();
+		pthread_mutex_unlock(&mutex);
+	}
+	
+	printf("Found this many primes %ld", count);
+	
+	return 0;
+	
+	
+}
