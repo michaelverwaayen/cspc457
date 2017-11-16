@@ -93,84 +93,86 @@ public:
 		//Max - Allocation = Need
 		// Available + Allocation = new Available id need < available 
 		
+		//Init my variables
 		bool finish[numProc];	
 		string steps;
 		int count = 0;
 		int countResource = 0;	
 		int sum = 0;
-		bool i =true;
 		int work[numResources];
+		
+		
+		
+		//INIT my vectors
 		for(int i=0; i < numResources;i++)
 		{
+			available[i] = available[i] - req[i];
+			need[pid][i] = need[pid][i] - req[i];
 			work[i] = available[i];
+			allocation[pid][i] = allocation[pid][i] + req[i];
 		}
 		
-		
+		//init my finished condition 
 		for(int i = 0 ; i < numProc; i++)
 		{
 			finish[i] = false;
 		}
-
+		
+		for(int i = 0; i < numProc;i++)
+		{
+			if(req[i]>max[pid][i])
+			{
+				sequenceOrReason = "Sorry you are exceeding max";
+				return false;
+			}
+			
+		}
+		
 	while(count < numProc)
 	{	
-		for(int i = 0; i < numResources; i++)
-		{
-		//	printf("WORK VALUES %d ",work[i]);
-		}
-		
-		for(int i = 0; i < numResources; i++)
-		{
-		//	printf("NEED VALUES %d", need[i]);
-		}
-			
-		
 		for(int j = 0; j < numProc; j++)
 		{
+			countResource = 0;	
 			for (int k = 0; k < numResources; k++)
 			{
-				if((work[k] >= need[j][k] ) && finish[j] == false)
+				if((need[j][k] <= work[k]   ) && finish[j] == false)
 				{
-
 					countResource++;	
-					finish[j] = true;
-					//printf("%d",countResource);
 				} 
 			}
-			if(countResource = numResources)
+			if(countResource == numResources)
 			{
 				for(int i=0; i < numResources; i++)
 				{
-					
-						work[i] = work[i] + allocation[j][i];
-
-					
-				}	
-		
+						work[i] = work[i] + allocation[j][i];	
+				}
+				finish[j] = true;				
+				count++;
 				sequenceOrReason = sequenceOrReason + "P" + std::to_string(j);
-				
-			}
-
-			countResource = 0;	
-			
+				if(count == numProc)
+				{
+					return true;
+				}
+			}		
 		}
-		for (int i = 0; i < numProc; i++)
+		sum++;
+		if(sum > numProc)
 		{
-			if (finish[i])
-			{
-				sum++;
-			}
+			sequenceOrReason = "Would result in unsafe state";
+			return false;
 		}
-//		if(sum = numProc)
-//			break;
-			
-		count++;
-		
 	}
 
 	if(count > numProc)
+	{
 			sequenceOrReason = "Sorry the request was too Large";
-
-	
+			return false;
+	}
+	else
+	{
+		sequenceOrReason = "Not enough resources Available";
+		return false;
+	}
 
         return false;
     }
