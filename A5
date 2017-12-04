@@ -13,6 +13,7 @@
 #include <queue>
 #include <list>
 #include <iterator>
+#include <algorithm>
 
 using namespace std;
 
@@ -21,112 +22,11 @@ using namespace std;
 	queue <int> optQ;
 	queue <int> lruQ;
 	queue <int> clockQ;
+	int x;
 
-int main( int argc, char ** argv)
+int positionCalc(queue <int> q,int p)
 {
-    /// parse command line arguments
-    int numberOfFrames = 1;
-	
-    if( argc != 1 && argc != 2 && argc != 3) {
-        printf("not enough info \n");
-        exit(-1);
-    }
-    if( argc == 3) 
-	{
-		numberOfFrames = atoi( argv[3]);
-	}
-		
-	
-
-    /// handle invalid arguments
-    if( numberOfFrames< 1 || numberOfFrames > 256) {
-        printf("Bad arguments. 1 <= numberOfFrames <= 256!\n");
-    }
-
-    while( 1)
-    {
-        int64_t num;
-        if( 1 != scanf("%ld", & num)) break;
-        optQ.push(num);
-		lruQ.push(num);
-		clockQ.push(num);
-
-    }
-	
-	printf("OPTIMAL \n");
-	int opt[numberOfFrames];
-	int optCount = 0;
-	list <int> optLst;
-	const int listSize = sizeof(optLst) / sizeof(int);
-	for(int i = 0; i < numberOfFrames; i++)
-	{
-		opt[i] = optQ.front();
-		optQ.pop(); 
-		optCount++;
-	}
-
-	while(!optQ.empty())
-	{
-		// 1 2 3 
-		//3 
-		for(int i = 0; i < numberOfFrames; i++)
-		{
-			if(optQ.front() == opt[i])
-			{
-				optQ.pop();
-				break;
-			}
-		}
-		// 1 2 3 
-		// 4 ?? 
-		for(int i = 0; i < numberOfFrames; i++)
-		{
-			optLst.push(positionCalc(optQ, opt[i]));
-		}
-		
-		opt[ distance(optLst, max_element(optLst, optLst + listSize))] = optQ.front();
-		optCount++;
-		optQ.pop()
-		optLst.clear();
-		
-	}
-	
-	printf("LRU \n");
-	int lru[numberOfFrames];
-	int lruCount = 0;
-	for(int i = 0; i < numberOfFrames; i++)
-	{
-		lru[i] = lruQ.front(); 
-		lruQ.pop(); 
-		lruCount++;
-	}
-	
-//	while(!lruQ.isEmpty())
-//	{
-		// 1 2 3 
-		//4 
-//	}
-	
-	printf("CLOCK \n");
-	int clock[numberOfFrames];
-	int clockCount = 0;
-	
-	for(int i = 0; i < numberOfFrames; i++)
-	{
-		clock[i] = clockQ.front(); 
-		clockQ.pop(); 
-		clockCount++;
-	}
-//	while(!clockQ.isEmpty())
-//	{
-		
-//	}
-    return 0;
-}
-
-int positionCalc(queue<int> q,int p)
-{
-	int counter = 0;
+	counter = 0;
 	while(!q.empty())
 	{
 		if(p == q.front())
@@ -142,3 +42,158 @@ int positionCalc(queue<int> q,int p)
 	
 	return 0;
 }
+
+int main( int argc, char ** argv)
+{
+    /// parse command line arguments
+    int numberOfFrames = 1;
+	
+    if( argc != 1 && argc != 2 && argc != 3) {
+        printf("not enough info \n");
+        exit(-1);
+    }
+    if( argc == 2) 
+	{
+		numberOfFrames = atoi( argv[1]);
+	}
+		
+	
+
+    /// handle invalid arguments
+    if( numberOfFrames< 0 || numberOfFrames > 256) {
+        printf("Bad arguments. 1 <= numberOfFrames <= 256!\n");
+    }
+
+    while( 1)
+    {
+        int num;
+        if( 1 != scanf("%ld", & num)) break;
+        optQ.push(num);
+		lruQ.push(num);
+		clockQ.push(num);
+
+    }
+	printf("NUMBER OF FRAMES: %d \n" , numberOfFrames);
+	printf("OPTIMAL \n");
+	int opt[numberOfFrames];
+	int optCount = 0;
+	int optLst[numberOfFrames];
+	const int listSize = sizeof(optLst) / sizeof(int);
+	for(int i = 0; i < numberOfFrames; i++)
+	{
+		opt[i] = optQ.front();
+		optQ.pop(); 
+		optCount++;
+	}
+
+	while(!optQ.empty())
+	{
+		// 1 2 3 
+		//3 
+		//if it is inside 
+		for(int i = 0; i < numberOfFrames; i++)
+		{
+			if(optQ.front() == opt[i])
+			{
+				optQ.pop();
+				break;
+			}
+		}
+		//end of if it is inside 
+		// 1 2 3 
+		// 4 ?? 
+		
+		//start of else 
+		for(int i = 0; i < numberOfFrames; i++)
+		{
+			x = opt[i];
+			int urMom = positionCalc(optQ, x);
+			optLst[i] = urMom;
+		}
+		int position = distance(optLst, max_element(optLst, (optLst + listSize)));
+		opt[distance (optLst, max_element(optLst, (optLst + listSize)))] = optQ.front();
+		optCount++;
+		optQ.pop();
+
+		//end of else 
+		
+	}
+	printf("FRAME:");
+	for(int i = 0 ; i < numberOfFrames; i++)
+	{
+		printf("%d", opt[i]);
+	}
+	printf("\n number of faults%d\n",optCount);
+	
+	printf("LRU \n");
+	int lru[numberOfFrames];
+	int lruCount = 0;
+	int lruPosition=0;
+	for(int i = 0; i < numberOfFrames; i++)
+	{
+		lru[i] = lruQ.front(); 
+		lruQ.pop(); 
+		lruCount++;
+	}
+	
+	while(!lruQ.empty())
+	{
+		//its already in the frames then do nothing 
+		for(int i = 0; i < numberOfFrames; i++)
+		{
+			if(lruQ.front() == lru[i])
+			{
+				optQ.pop();
+				break;
+			}
+		}
+		if(lruPosition < numberOfFrames)
+		{
+			lruCount++;
+			lru[lruPosition] = lruQ.front();
+			lruQ.pop();
+			lruPosition++;
+		}
+		if(lruPosition == numberOfFrames)
+		{
+			lruPosition = 0;
+		}
+		//it isnt in the frames do last recently used.......
+		//ok so my issue is where in the array im putting them
+		// [1] [2] [3] [4] how do i know where they go? with a counter!!!!!
+		
+		
+		
+		// 1 2 3 
+		//4 
+	}
+		for(int i = 0 ; i < numberOfFrames; i++)
+	{
+		printf("%d", lru[i]);
+	}
+	printf("\n number of faults%d\n",lruCount);
+	
+	printf("CLOCK \n");
+/*	int clock[numberOfFrames];
+	int write[numberOfFrames];
+	int clockCount = 0;
+	int used = 1;
+	for(int i = 0; i < numberOfFrames;i++)
+	{
+		write[i] = 0;
+	}
+	for(int i = 0; i < numberOfFrames; i++)
+	{
+		clock[i] = clockQ.front(); 
+		write[i] = 1;
+		clockQ.pop(); 
+		clockCount++;
+	}
+//	while(!clockQ.isEmpty())
+//	{
+		
+//	}
+*/
+    return 0;
+}
+
